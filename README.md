@@ -10,7 +10,9 @@ Pruebas automatizadas con [Playwright](https://playwright.dev/) para `https://sm
 ├── scripts/
 │   └── export-cert.ps1 Exporta el certificado cliente desde el almacén de Windows
 ├── tests/
-│   └── login.test.js   Casos de prueba (login, dashboard, configuración de transferencia)
+│   ├── helpers.js           Selectores y helpers compartidos entre features
+│   ├── login.test.js        Feature: Login & Authentication (TC-01 a TC-05)
+│   └── new-scenario.test.js Feature: Dashboard / New Scenario (TC-06)
 ├── playwright.config.js
 ├── package.json
 └── .gitignore
