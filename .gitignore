@@ -1,0 +1,11 @@
+node_modules/
+certs/
+screenshots/
+test-results/
+playwright-report/
+.env
+.env.*
+*.log
+.vscode/
+Thumbs.db
+.DS_Store
