@@ -246,4 +246,47 @@ test.describe('Portfolio Transfer – Dashboard', () => {
     await page.screenshot({ path: 'screenshots/TC-06-10-after-next.png', fullPage: true });
   });
 
+  test('TC-07 | New Scenario: select a sending intermediary by partial name match', async ({ page }) => {
+    await page.goto('https://smart-dev.allianz.com/portfolio-transfer/dashboard');
+    await page.waitForLoadState('domcontentloaded');
+    await expect(page.locator(SELECTORS.appRoot).first()).toBeVisible({ timeout: 30_000 });
+
+    const loadingIndicator = page.locator('[role="status"]').filter({ hasText: 'Loading' }).first();
+    if (await loadingIndicator.isVisible({ timeout: 3_000 }).catch(() => false)) {
+      await loadingIndicator.waitFor({ state: 'hidden', timeout: 30_000 });
+    }
+
+    const newScenarioBtn = page.locator(SELECTORS.newScenarioButton).first();
+    await expect(newScenarioBtn).toBeVisible({ timeout: 15_000 });
+    await expect(newScenarioBtn).toBeEnabled();
+    await newScenarioBtn.click();
+    await page.screenshot({ path: 'screenshots/TC-07-01-new-scenario.png' });
+
+    const selectSendingAgentBtn = page.locator(SELECTORS.selectSendingAgentButton).first();
+    await expect(selectSendingAgentBtn).toBeVisible({ timeout: 15_000 });
+    await expect(selectSendingAgentBtn).toBeEnabled();
+    await selectSendingAgentBtn.click();
+    await page.waitForSelector('nx-sidepanel:not(.ng-animating)', { timeout: 15_000 });
+    await page.screenshot({ path: 'screenshots/TC-07-02-select-sending-agent.png' });
+
+    const agentSearchInput = page.locator('input[placeholder="Search by name (min 3 characters)"]').first();
+    await agentSearchInput.waitFor({ state: 'visible', timeout: 15_000 });
+    await agentSearchInput.scrollIntoViewIfNeeded();
+    await agentSearchInput.click();
+    await agentSearchInput.pressSequentially('Julia', { delay: 100 });
+
+    // "Julia" alone can match several intermediaries, so unlike TC-06 (which pins
+    // down "Mario Bace" by exact name) this test accepts the first search result.
+    const firstResultRow = page.getByRole('listitem').first();
+    await expect(firstResultRow).toBeVisible({ timeout: 30_000 });
+    const firstResultAddBtn = firstResultRow.getByRole('button', { name: /^Add/ });
+    await expect(firstResultAddBtn).toBeVisible({ timeout: 30_000 });
+    await firstResultAddBtn.click();
+    await page.screenshot({ path: 'screenshots/TC-07-03-intermediary-selected.png' });
+
+    // Sidepanel closes once the intermediary is added
+    await page.waitForSelector('nx-sidepanel:not(.ng-animating)', { timeout: 15_000 });
+    await page.screenshot({ path: 'screenshots/TC-07-04-sidepanel-closed.png' });
+  });
+
 });
