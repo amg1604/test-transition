@@ -1,0 +1,37 @@
+// Practice pipeline (login tests only) for a local, non-admin Jenkins (http://localhost:8081).
+// Differences vs. Jenkinsfile:
+//  - agent any (the local Jenkins itself)
+//  - no credentials: Edge uses the client cert from the Windows user store
+//  - CI is NOT set, so Playwright runs headed like on your machine
+pipeline {
+    agent any
+
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
+    }
+
+    stages {
+        stage('Install') {
+            steps { bat 'npm ci' }
+        }
+        stage('Test') {
+            steps { bat 'npx playwright test tests/login.test.js' }
+        }
+    }
+
+    post {
+        always {
+            junit allowEmptyResults: true, testResults: 'test-results/junit.xml'
+            publishHTML(target: [
+                reportDir: 'playwright-report',
+                reportFiles: 'index.html',
+                reportName: 'Playwright Report',
+                keepAll: true,
+                allowMissing: true,
+                alwaysLinkToLastBuild: true
+            ])
+            archiveArtifacts artifacts: 'test-results/**', allowEmptyArchive: true
+        }
+    }
+}
